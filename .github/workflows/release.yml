@@ -1,0 +1,42 @@
+name: Publish verified preview release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing lightweight version tag (for example v1.5.1)
+        required: true
+        default: v1.5.1
+        type: string
+      build_run_id:
+        description: Successful main-branch build run for the exact tag commit
+        required: true
+        default: '39235485787'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-preview-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: macos-15
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - name: Test release verification guards
+        run: python3 -m unittest discover -s tests -p test_release.py
+      - name: Verify CI packages and publish the matching preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          BUILD_RUN_ID: ${{ inputs.build_run_id }}
+        run: python3 scripts/publish_release.py

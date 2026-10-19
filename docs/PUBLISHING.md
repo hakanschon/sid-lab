@@ -56,3 +56,11 @@ Suggested description: **A playable C64 SID synthesizer for Apple Silicon — st
 The CI workflow builds/tests on a macOS arm64 runner with read-only repository permissions. It does not publish releases automatically. Local verification does not establish hosted CI success.
 
 The complete source archive supports offline rebuilds: extract it, run `python3 scripts/verify_dependencies.py`, then `./scripts/build.sh`. Its dependency checksum manifest detects changes relative to the manifest; it is not a maintainer signature. Keep the exact archive distributed with the binaries rather than regenerating it from a later revision. See [LICENSES.md](../LICENSES.md) for redistribution terms and upstream notices.
+
+## Publish the verified CI packages
+
+The **Publish verified preview release** Actions workflow is manually dispatched. Supply an existing lightweight version tag and the successful main-branch build run for that exact commit. The defaults select the first public 1.5.1 build. Add release notes in `docs/releases/TAG.md` before running it.
+
+The workflow uses a temporary, repository-scoped token: Actions read access retrieves the selected CI artifact, and Contents write access publishes the release. No personal access token or signing identity is stored in the repository. It verifies the build's origin/status/commit, artifact digest, exact package inventory, corresponding source against the tagged Git tree, dependency checksums, binary signatures/architecture and bundled notices before uploading. Authenticated storage redirects never forward the GitHub token.
+
+All assets and their SHA-256 checksums must verify before the draft becomes a public **pre-release**. Existing published assets are never replaced. This workflow publishes ad hoc signed previews; it does not perform Developer ID signing or notarization.
