@@ -1,0 +1,34 @@
+{
+  "third_party/JUCE/docs/CMake API.md": {
+    "sha256": "2289752a62c8b85fe1ad8503f5e08598d02c0fd73f71261ed6b891b39e32bd57",
+    "findings": [
+      "personal absolute path"
+    ],
+    "reason": "Documentation uses an illustrative home-directory path; it is not a maintainer checkout.",
+    "source": "https://github.com/juce-framework/JUCE/blob/3fb5cbc0340758596dac39f7c8de47d562b4896e/docs/CMake%20API.md"
+  },
+  "third_party/JUCE/examples/Assets/google-services.json": {
+    "sha256": "373727fb1487415862a5cc1ebd3fe3935ad0ef0f85fd6d724d9103616989a138",
+    "findings": [
+      "Google API key"
+    ],
+    "reason": "Published JUCE Firebase sample configuration. Firebase client identifiers are public configuration, not a SID Lab credential.",
+    "source": "https://github.com/juce-framework/JUCE/blob/3fb5cbc0340758596dac39f7c8de47d562b4896e/examples/Assets/google-services.json"
+  },
+  "third_party/JUCE/examples/DemoRunner/Builds/Android/app/src/main/assets/google-services.json": {
+    "sha256": "373727fb1487415862a5cc1ebd3fe3935ad0ef0f85fd6d724d9103616989a138",
+    "findings": [
+      "Google API key"
+    ],
+    "reason": "Identical published JUCE Firebase sample configuration, unused by SID Lab.",
+    "source": "https://github.com/juce-framework/JUCE/blob/3fb5cbc0340758596dac39f7c8de47d562b4896e/examples/DemoRunner/Builds/Android/app/src/main/assets/google-services.json"
+  },
+  "third_party/JUCE/extras/AudioPluginHost/Builds/Android/app/src/main/assets/google-services.json": {
+    "sha256": "373727fb1487415862a5cc1ebd3fe3935ad0ef0f85fd6d724d9103616989a138",
+    "findings": [
+      "Google API key"
+    ],
+    "reason": "Identical published JUCE Firebase sample configuration, unused by SID Lab.",
+    "source": "https://github.com/juce-framework/JUCE/blob/3fb5cbc0340758596dac39f7c8de47d562b4896e/extras/AudioPluginHost/Builds/Android/app/src/main/assets/google-services.json"
+  }
+}

@@ -1,0 +1,9 @@
+name: Feature request
+description: Suggest an improvement to SID Lab.
+body:
+  - type: textarea
+    attributes:
+      label: What would help you make music?
+      description: Describe the use case and the behavior you would like.
+    validations:
+      required: true

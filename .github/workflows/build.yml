@@ -1,0 +1,56 @@
+name: Build and test macOS arm64
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      SIDLAB_JOBS: 2
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0
+          submodules: recursive
+          persist-credentials: false
+      - name: Check public source and toolchain
+        run: |
+          test "$(uname -m)" = arm64
+          cmake --version
+          python3 --version
+          python3 scripts/check_public.py
+          python3 scripts/audit_release.py --history
+          python3 scripts/verify_dependencies.py
+      - name: Build, test, sign local artifacts and package complete source
+        run: ./scripts/build.sh
+      - name: Audit decompressed release contents
+        run: python3 scripts/audit_release.py --history build/SIDLab-AU-arm64.zip build/SIDLab-Standalone-arm64.zip build/SIDLab-source.tar.gz
+      - name: Verify the dependency-inclusive source archive builds without Git metadata
+        run: |
+          mkdir build/source-check
+          tar -xzf build/SIDLab-source.tar.gz -C build/source-check
+          python3 build/source-check/sid-lab/scripts/verify_dependencies.py
+          cmake -S build/source-check/sid-lab -B build/source-check/engine -DCMAKE_BUILD_TYPE=Release -DSIDLAB_ENGINE_ONLY=ON
+          cmake --build build/source-check/engine --parallel 2
+          build/source-check/engine/engine_probe build/source-check/engine/probe.wav
+      - name: Upload matching binaries and complete corresponding source
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: SIDLab-macos-arm64-${{ github.sha }}
+          path: |
+            build/SIDLab-AU-arm64.zip
+            build/SIDLab-Standalone-arm64.zip
+            build/SIDLab-source.tar.gz
+          if-no-files-found: error
+          retention-days: 14

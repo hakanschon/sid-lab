@@ -1,0 +1,19 @@
+name: Bug report
+description: Report an instrument, MIDI, preset or host issue.
+body:
+  - type: textarea
+    attributes:
+      label: Environment
+      description: SID Lab version, macOS version, Mac architecture, standalone or host/version, MIDI controller if relevant.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps and result
+      description: Exact steps, expected behavior, actual behavior, and whether it also happens standalone.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Diagnostics
+      description: Relevant build, AU validation or incoming CC/channel information. Remove credentials, personal paths and device serials before posting.

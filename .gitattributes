@@ -1,0 +1,8 @@
+* text=auto eol=lf
+# Preserve JUCE's JSON exports and verbatim upstream notice bytes.
+*.json -text
+licenses/** -text
+*.png binary
+*.wav binary
+*.zip binary
+*.gz binary

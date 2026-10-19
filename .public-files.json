@@ -1,0 +1,4 @@
+{
+  "files": [".gitignore", ".gitattributes", ".gitmodules", ".public-files.json", "README.md", "LICENSE", "LICENSES.md", "CREDITS.md", "THIRD_PARTY_NOTICES.md", "BUILDING.md", "INSTALL.md", "USER_GUIDE.md", "CHANGELOG.md", "CONTRIBUTING.md", "SECURITY.md", "CMakeLists.txt", "dependencies.lock"],
+  "directories": [".github", "cmake", "docs", "licenses", "presets", "scripts", "source", "tests"]
+}
