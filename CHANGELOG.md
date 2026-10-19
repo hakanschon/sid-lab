@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.2 — Downloadable preview
+
+- Standalone/AU download links, complete source, checksums and installation instructions.
+- Verified CI-to-release publishing with repository-scoped authentication.
+- MIDI Learn tests wait for observable GUI completion instead of a fixed timer delay.
+- Synthesis and MIDI processing are unchanged from 1.5.1.
+
 ## 1.5.1 — Public source preparation
 
 - Clear standalone, GarageBand, MIDI and user-preset instructions.

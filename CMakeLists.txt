@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(SIDLab VERSION 1.5.1 LANGUAGES C CXX OBJC OBJCXX)
+project(SIDLab VERSION 1.5.2 LANGUAGES C CXX OBJC OBJCXX)
 if(NOT APPLE)
     message(FATAL_ERROR "SID Lab targets macOS arm64. Use Xcode command line tools on macOS.")
 endif()

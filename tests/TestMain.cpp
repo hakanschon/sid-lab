@@ -67,19 +67,36 @@ void voicingTests(SidEngine& engine,const juce::File& evidence,int firstPreset,c
     std::cout<<"METRIC "<<bank<<" normalized nearest_distance="<<closest<<" centroid_range="<<*low<<".."<<*high<<" tail_fraction_range="<<*shortest<<".."<<*longest<<"\n";
     wav(evidence.getChildFile(filename),comparison,48000);
 }
+// Native run-loop calls may return before their requested timeout. Wait for
+// the observable message-thread result instead of assuming one pump was enough.
+template <typename Predicate> bool waitForMessages(Predicate predicate){
+    const auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(2);
+    while(!predicate()&&std::chrono::steady_clock::now()<deadline){
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode,0.005,false);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    return predicate();
+}
 void midiKnobTests(const juce::File& evidence){
     section("1.5 eight rotary controls, MIDI Learn and project recall");
     Processor p;p.prepareToPlay(48000,256);juce::AudioBuffer<float> block(2,256);juce::MidiBuffer midi;midi.ensureSize(2048);
     auto cc=[&](int channel,int number,int value){midi.addEvent(juce::MidiMessage::controllerEvent(channel,number,value),73);startAllocationGuard();p.processBlock(block,midi);const auto allocations=stopAllocationGuard();check(allocations==0,"knob and learn callbacks allocate no heap memory");};
     // Pump the native message loop so the same timer that updates a real editor
     // publishes MIDI values and advances the learning wizard.
-    auto timers=[] {CFRunLoopRunInMode(kCFRunLoopDefaultMode,0.08,false);};
+    auto timers=[] {
+        const auto deadline=std::chrono::steady_clock::now()+std::chrono::milliseconds(80);
+        while(std::chrono::steady_clock::now()<deadline){
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode,0.005,false);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+    };
     for(size_t knob=0;knob<midiKnobParams.size();++knob)for(int value:{0,63,127}){
         const auto before=p.snapshot();cc(16,defaultKnobCC[knob],value);auto expected=before;
         const auto& s=parameterSpecs()[midiKnobParams[knob]];expected[size_t(midiKnobParams[knob])]=s.min+(s.max-s.min)*value/127.0f;
         check(nearPatch(p.snapshot(),sanitize(expected)),"all eight default controllers change exactly their intended parameter at both endpoints and midpoint");
     }
-    timers();for(int parameter:midiKnobParams)check(std::abs(p.parameters.getRawParameterValue(parameterSpecs()[parameter].id)->load()-p.snapshot()[parameter])<.001f,"MIDI changes publish to visible/host parameters");
+    waitForMessages([&]{for(int parameter:midiKnobParams)if(std::abs(p.parameters.getRawParameterValue(parameterSpecs()[parameter].id)->load()-p.snapshot()[parameter])>=.001f)return false;return true;});
+    for(int parameter:midiKnobParams)check(std::abs(p.parameters.getRawParameterValue(parameterSpecs()[parameter].id)->load()-p.snapshot()[parameter])<.001f,"MIDI changes publish to visible/host parameters");
     for(int value=0;value<128;++value)midi.addEvent(juce::MidiMessage::controllerEvent(1,74,value),value);
     startAllocationGuard();p.processBlock(block,midi);check(stopAllocationGuard()==0&&p.snapshot()[Cutoff]==2047,"dense rotary sweeps retain the last value without callback allocation");
     cc(1,1,37);check(std::abs(p.snapshot()[Movement]-37.0f/127)<.0001f,"modulation wheel retains its legacy movement mapping");cc(1,7,83);check(std::abs(p.snapshot()[Master]-83.0f/127)<.0001f,"volume CC retains its legacy master mapping");
@@ -88,7 +105,7 @@ void midiKnobTests(const juce::File& evidence){
     timers();check(p.midiLearnKnob()==0,"pedals, banks, data entry and note-control commands do not steal a knob assignment");
     // Non-default controller/channel combinations model a custom controller preset.
     for(int knob=0;knob<8;++knob){
-        cc(3,20+knob,50);timers();check(p.midiLearnKnob()==(knob==7?-1:knob+1),"learn wizard advances once for each distinct rotary control");
+        cc(3,20+knob,50);check(waitForMessages([&]{return p.midiLearnKnob()==(knob==7?-1:knob+1);}),"learn wizard advances once for each distinct rotary control");
         if(knob<7){cc(3,20+knob,51);timers();check(p.midiLearnKnob()==knob+1,"continued movement of the previous knob cannot capture the next slot");check(p.midiKnobBinding(knob)==defaultKnobCC[size_t(knob)],"partial learning does not replace the active map");}
     }
     check(nearPatch(p.snapshot(),oldPatch),"learning eight controls does not alter the sound");
@@ -103,7 +120,7 @@ void midiKnobTests(const juce::File& evidence){
     p.loadFactory(96);p.generate(8,1234,false);p.undo();p.compare();for(int knob=0;knob<8;++knob)check(p.midiKnobBinding(knob)==midiBinding(3,20+knob),"preset/discovery/A-B actions retain controller setup");
     p.beginMidiLearn();cc(5,40,80);timers();p.cancelMidiLearn();for(int knob=0;knob<8;++knob)check(p.midiKnobBinding(knob)==midiBinding(3,20+knob),"cancel keeps all previous assignments");
     p.beginMidiLearn(2);cc(4,44,80);p.cancelMidiLearn();timers();check(p.midiKnobBinding(2)==midiBinding(3,22),"cancel rejects an already queued learning result");
-    p.beginMidiLearn(0);cc(3,21,80);timers();check(p.midiKnobBinding(0)==midiBinding(3,21)&&p.midiKnobBinding(1)==midiBinding(3,20),"reusing an assigned control swaps its old binding instead of creating duplicates");
+    p.beginMidiLearn(0);cc(3,21,80);check(waitForMessages([&]{return p.midiLearnKnob()==-1&&p.midiKnobBinding(0)==midiBinding(3,21)&&p.midiKnobBinding(1)==midiBinding(3,20);}),"reusing an assigned control swaps its old binding instead of creating duplicates");
     p.resetMidiKnobs();for(int knob=0;knob<8;++knob)check(p.midiKnobBinding(knob)==defaultKnobCC[size_t(knob)],"standard assignments can be restored");
     auto saved=juce::JSON::parse(juce::String::fromUTF8(static_cast<const char*>(state.getData()),int(state.getSize())));
     auto restoreJson=[&]{const auto text=juce::JSON::toString(saved);restored.setStateInformation(text.toRawUTF8(),text.getNumBytesAsUTF8());};
@@ -115,8 +132,8 @@ void midiKnobTests(const juce::File& evidence){
     for(auto* child:editor->getChildren())if(child->getComponentID()=="midiKnobs")visible=child->isVisible()&&!dynamic_cast<juce::TextButton*>(child)->getTooltip().isEmpty();
     check(visible,"eight-knob setup is visible with instructions in the actual editor");
     auto capture=[&](const char* name){auto image=editor->createComponentSnapshot(editor->getLocalBounds(),true,1);juce::PNGImageFormat png;auto stream=evidence.getChildFile(name).createOutputStream();if(stream){stream->setPosition(0);stream->truncate();check(png.writeImageToStream(image,*stream),"eight-knob editor capture writes");}};
-    timers();capture("midi-knob-mode.png");p.beginMidiLearn();timers();bool prompted=false;
-    for(auto* child:editor->getChildren())if(child->getComponentID()=="midiKnobs")prompted=dynamic_cast<juce::TextButton*>(child)->getButtonText()=="TURN KNOB 1";
+    timers();capture("midi-knob-mode.png");p.beginMidiLearn();
+    const bool prompted=waitForMessages([&]{for(auto* child:editor->getChildren())if(child->getComponentID()=="midiKnobs")return dynamic_cast<juce::TextButton*>(child)->getButtonText()=="TURN KNOB 1";return false;});
     check(prompted,"real editor shows the physical knob requested by the learning wizard");capture("midi-learn-mode.png");p.cancelMidiLearn();
 }
 void presetWorkflowTests(const juce::File& evidence){

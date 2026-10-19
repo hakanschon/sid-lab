@@ -59,7 +59,7 @@ The complete source archive supports offline rebuilds: extract it, run `python3 
 
 ## Publish the verified CI packages
 
-The **Publish verified preview release** Actions workflow is manually dispatched. Supply an existing lightweight version tag and the successful main-branch build run for that exact commit. The defaults select the first public 1.5.1 build. Add release notes in `docs/releases/TAG.md` before running it.
+The **Publish verified preview release** Actions workflow is manually dispatched. Supply an existing lightweight version tag and the successful main-branch build run for that exact commit. Enter the successful build run ID for the selected tag. Release-note templates may use `@SOURCE_COMMIT@` and `@BUILD_RUN_ID@`, which are resolved to the verified build before publication. Add release notes in `docs/releases/TAG.md` before running it.
 
 The workflow uses a temporary, repository-scoped token: Actions read access retrieves the selected CI artifact, and Contents write access publishes the release. No personal access token or signing identity is stored in the repository. It verifies the build's origin/status/commit, artifact digest, exact package inventory, corresponding source against the tagged Git tree, dependency checksums, binary signatures/architecture and bundled notices before uploading. Authenticated storage redirects never forward the GitHub token.
 

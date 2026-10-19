@@ -6,12 +6,11 @@ on:
       tag:
         description: Existing lightweight version tag (for example v1.5.1)
         required: true
-        default: v1.5.1
+        default: v1.5.2
         type: string
       build_run_id:
         description: Successful main-branch build run for the exact tag commit
         required: true
-        default: '39235485787'
         type: string
 
 permissions:

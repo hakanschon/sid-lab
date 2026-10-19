@@ -209,7 +209,7 @@ def main():
         verify_packages(payload, tree, tag[1:], Path(temporary))
     checksums = ''.join(hashlib.sha256(data).hexdigest() + '  ' + name + '\n' for name, data in sorted(payload.items()))
     payload['SHA256SUMS.txt'] = checksums.encode()
-    notes = Path('docs/releases/' + tag + '.md').read_text()
+    notes = Path('docs/releases/' + tag + '.md').read_text().replace('@SOURCE_COMMIT@', commit).replace('@BUILD_RUN_ID@', run_id)
     if commit not in notes or 'not Developer ID signed or notarized by Apple' not in notes:
         raise ValueError('Release notes must state the exact source commit and preview signing status')
     releases = github.request('/releases?per_page=100')

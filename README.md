@@ -4,6 +4,14 @@
 
 Explore the sound of the Commodore 64's MOS 6581 and CSG 8580 chips through a modern instrument: 104 original sounds, a full chip editor, seeded sound discovery, retro drum kits and live visualizations. Play from a MIDI keyboard, use the on-screen keys, or record in GarageBand.
 
+## Download for Apple Silicon
+
+**[Download Standalone app](https://github.com/hakanschon/sid-lab/releases/download/v1.5.2/SIDLab-Standalone-arm64.zip)** · **[Download Audio Unit](https://github.com/hakanschon/sid-lab/releases/download/v1.5.2/SIDLab-AU-arm64.zip)**
+
+[Release notes](https://github.com/hakanschon/sid-lab/releases/tag/v1.5.2) · [Complete source with dependencies](https://github.com/hakanschon/sid-lab/releases/download/v1.5.2/SIDLab-source.tar.gz) · [SHA-256 checksums](https://github.com/hakanschon/sid-lab/releases/download/v1.5.2/SHA256SUMS.txt)
+
+**Preview release:** these arm64 builds are ad hoc signed and **not notarized by Apple**. macOS may block downloaded builds. They are intended for early testing; building from source remains available. Read the [download installation instructions](INSTALL.md#install-a-downloaded-preview) before installing. Intel Macs, Windows and Linux are not supported.
+
 ![SID Lab Play view](docs/images/play.png)
 
 SID Lab uses the actual **[libresidfp](https://github.com/libsidplayfp/libresidfp)** SID emulator and **[JUCE](https://juce.com/)**. The emulation is the work of **Dag Lem, Antti S. Lankila, Ken Händel and Leandro Nini**. JUCE was created by **Julian “Jules” Storer** and developed by **Raw Material Software and the JUCE contributors**. Their work makes this instrument possible. See [Credits](CREDITS.md), [Third-party notices](THIRD_PARTY_NOTICES.md) and [Licensing](LICENSES.md).

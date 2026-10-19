@@ -1,5 +1,34 @@
 # Install and verify
 
+## Install a downloaded preview
+
+Get the [Standalone app](https://github.com/hakanschon/sid-lab/releases/download/v1.5.2/SIDLab-Standalone-arm64.zip) or [Audio Unit](https://github.com/hakanschon/sid-lab/releases/download/v1.5.2/SIDLab-AU-arm64.zip) from the [release page](https://github.com/hakanschon/sid-lab/releases/tag/v1.5.2). Downloads do not require a GitHub account. These builds target Apple Silicon (arm64), with macOS 12 as the minimum deployment target.
+
+**Signing status:** this preview is ad hoc signed and not notarized by Apple. macOS may block it. Building from source is the supported alternative when a downloaded build is blocked; do not disable Gatekeeper or remove quarantine as an installation step. A normal signed/notarized distribution is planned when Developer ID signing is available.
+
+### Standalone app
+
+1. Download and extract `SIDLab-Standalone-arm64.zip` in Finder.
+2. Keep `SID Lab.app` in a folder such as your user Applications folder, then open it.
+3. Choose **Options → Audio/MIDI Settings**, select an output device and enable your MIDI controller.
+4. Select sounds from the large preset-name menu. See the [user guide](USER_GUIDE.md).
+
+### Audio Unit for GarageBand
+
+1. Quit GarageBand and any host using SID Lab. Export sounds and back up an existing SID Lab component before replacing it; earlier development builds may use a different plugin identity.
+2. Download and extract `SIDLab-AU-arm64.zip`.
+3. In Finder, use **Go → Go to Folder** and enter `~/Library/Audio/Plug-Ins/Components/`. Create the Components folder if needed, and copy `SID Lab.component` into it.
+4. Reopen GarageBand, enable Audio Units, then choose **AU Instruments → SID Lab → SID Lab → Stereo** on a software-instrument track. Click the middle of the instrument slot to open the preset browser.
+5. Follow the [GarageBand acceptance checklist](#garageband-acceptance-checklist) below. These instructions do not establish compatibility with every OS/host version.
+
+### Verify or rebuild
+
+The release includes `SHA256SUMS.txt`. To verify one downloaded file, run `shasum -a 256 SIDLab-Standalone-arm64.zip` or the corresponding AU/source filename, and compare the result with the checksum file.
+
+For source builds, use the release's **`SIDLab-source.tar.gz`**, which includes pinned dependencies. GitHub's automatically generated “Source code” downloads omit submodule contents. See [BUILDING.md](BUILDING.md).
+
+## Build, install and validate from source
+
 Build and test first, then install the one owned AU component:
 
 ```sh
